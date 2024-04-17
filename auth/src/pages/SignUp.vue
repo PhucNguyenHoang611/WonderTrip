@@ -1,9 +1,21 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useToast } from "vue-toast-notification";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import SignUpImage from "/SignUpImage.jpg";
 
+import {
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider } from "firebase/auth";
+import { addDoc } from "firebase/firestore";
+import { usersRef, googleAuthProvider } from "@/config/firebase";
+import { useFirebaseAuth, useCollection } from "vuefire";
+
+const countries = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Anguilla", "Antigua &amp; Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia &amp; Herzegovina", "Botswana", "Brazil", "British Virgin Islands", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Cape Verde", "Cayman Islands", "Chad", "Chile", "China", "Colombia", "Congo", "Cook Islands", "Costa Rica", "Cote D Ivoire", "Croatia", "Cruise Ship", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Estonia", "Ethiopia", "Falkland Islands", "Faroe Islands", "Fiji", "Finland", "France", "French Polynesia", "French West Indies", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kuwait", "Kyrgyz Republic", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macau", "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Mauritania", "Mauritius", "Mexico", "Moldova", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Namibia", "Nepal", "Netherlands", "Netherlands Antilles", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Norway", "Oman", "Pakistan", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Puerto Rico", "Qatar", "Reunion", "Romania", "Russia", "Rwanda", "Saint Pierre &amp; Miquelon", "Samoa", "San Marino", "Satellite", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "South Africa", "South Korea", "Spain", "Sri Lanka", "St Kitts &amp; Nevis", "St Lucia", "St Vincent", "St. Lucia", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", `Timor L"Este`, "Togo", "Tonga", "Trinidad &amp; Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks &amp; Caicos", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Venezuela", "Vietnam", "Virgin Islands (US)", "Yemen", "Zambia", "Zimbabwe"];
+
+const auth = useFirebaseAuth()!;
+const router = useRouter();
 const $toast = useToast();
 const emailRegex = /^[a-z0-9_\.]{1,32}@[a-z0-9]{2,10}(\.[a-z0-9]{2,10}){1,}$/;
 
@@ -13,9 +25,12 @@ const lastName = ref("");
 const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
-const country = ref("");
+const country = ref(null);
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
+const emailErrorMessage = ref("");
+
+const usersCollection = useCollection(usersRef);
 
 const inputRules: any = {
   firstNameRequired: (value: string) => !!value || "First name is required",
@@ -25,7 +40,7 @@ const inputRules: any = {
   passwordRequired: (value: string) => !!value || "Password is required",
   confirmPasswordCheck: (value: string) => value === password.value || "Invalid confirm password",
   passwordLength: (value: string) => value.length >= 8 || "Password must be at least 8 characters long",
-  countryRequired: (value: string) => !!value || "Country is required",
+  countryRequired: (value: string) => !!value || "Country is required"
 };
 
 const handleSignUp = () => {
@@ -41,10 +56,83 @@ const handleSignUp = () => {
     && password.value.length >= 8
     && country.value !== ""
   ) {
-    showToast("success", "Sign Up Successfully !!!");
+  createUserWithEmailAndPassword(auth, email.value, password.value)
+    .then(async (userCredential) => {
+      try {
+        const docRef = await addDoc(usersRef, {
+          id: userCredential.user.uid,
+          firstName: firstName.value,
+          lastName: lastName.value,
+          email: email.value,
+          password: password.value,
+          country: country.value,
+          createdAt: new Date()
+        });
+        
+        console.log("User written with ID: ", docRef.id);
+        showToast("success", "Sign up successfully !");
+        router.push("/");
+      } catch (e) {
+        console.error("Error adding user: ", e);
+      }
+    })
+    .catch((error) => {
+      console.log(error.message);
+
+      if (error.code === "auth/email-already-in-use")
+        emailErrorMessage.value = "This email is already in use !";
+    });
   }
-  
+
   isLoading.value = false;
+};
+
+const handleSignUpWithGoogle = () => {
+  emailErrorMessage.value = "";
+
+  signInWithPopup(auth, googleAuthProvider)
+    .then(async (result) => {
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken;
+      console.log("Token: ", token);
+
+      try {
+        if (!checkEmailIfExists(result.user.email)) {
+          const docRef = await addDoc(usersRef, {
+            id: result.user.uid,
+            firstName: result.user.displayName,
+            lastName: "",
+            email: result.user.email,
+            password: "0",
+            country: "Vietnam",
+            createdAt: new Date()
+          });
+          
+          console.log("User written with ID: ", docRef.id);
+        }
+
+        console.log("Signed in user: ", result.user);
+        showToast("success", "Sign in successfully !");
+        router.push("/");
+      } catch (e) {
+        console.error("Error adding user: ", e);
+      }
+    })
+    .catch((error) => {
+      console.log(error.message);
+      // const email = error.customData.email;
+      // console.log("Email: ", email);
+      // const credential = GoogleAuthProvider.credentialFromError(error);
+      // console.log("Credential: ", credential);
+    });
+};
+
+const checkEmailIfExists = (email: string | null) => {
+  const user = usersCollection.value.find((user: any) => user.email === email);
+
+  if (user)
+    return true;
+  return false;
 };
 
 const showToast = (errorType: string, message = "") => {
@@ -104,7 +192,8 @@ const showToast = (errorType: string, message = "") => {
             :rules="[inputRules.emailRequired, inputRules.emailFormat]"
             label="Email Address"
             v-model="email"
-            variant="underlined">
+            variant="underlined"
+            :error-messages="emailErrorMessage">
           </v-text-field>
 
           <v-text-field
@@ -129,13 +218,14 @@ const showToast = (errorType: string, message = "") => {
             variant="underlined">
           </v-text-field>
 
-          <v-text-field
-            type="text"
+          <v-autocomplete
+            :items="countries"
             label="Your Country"
             v-model="country"
             :rules="[inputRules.countryRequired]"
+            placeholder="Select..."
             variant="underlined">
-          </v-text-field>
+          </v-autocomplete>
           
           <v-btn
             block
@@ -172,7 +262,8 @@ const showToast = (errorType: string, message = "") => {
             class="text-none w-full"
             size="large"
             prepend-icon="mdi-google"
-            variant="outlined">
+            variant="outlined"
+            @click="handleSignUpWithGoogle">
             Continue with Google
           </v-btn>
         </div>

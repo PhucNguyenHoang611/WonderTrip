@@ -23,13 +23,28 @@ import router from "@/router";
 import VueToast from "vue-toast-notification";
 import "vue-toast-notification/dist/theme-sugar.css";
 
+// Firebase
+import { VueFire, VueFireAuth } from "vuefire";
+import { firebaseApp } from "@/config/firebase";
+
 const pinia = createPinia();
 const app = createApp(App);
 
 app.use(pinia);
+
 app.use(router);
+
 app.use(vuetify);
+
 app.use(VueToast, {
   position: "top"
 });
+
+app.use(VueFire, {
+  firebaseApp,
+  modules: [
+    VueFireAuth()
+  ]
+});
+
 app.mount("#app");
