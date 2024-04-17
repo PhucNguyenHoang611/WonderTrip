@@ -1,17 +1,25 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useToast } from "vue-toast-notification";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import SignInImage from "/SignInImage.jpg";
+import { useFirebaseAuth, useCollection } from "vuefire";
+import {
+  signInWithEmailAndPassword, 
+  signInWithPopup,
+  GoogleAuthProvider } from "firebase/auth";
+import { addDoc } from "firebase/firestore";
+import { googleAuthProvider, usersRef } from "@/config/firebase";
 
+const auth = useFirebaseAuth()!;
+const router = useRouter();
 const $toast = useToast();
 const emailRegex = /^[a-z0-9_\.]{1,32}@[a-z0-9]{2,10}(\.[a-z0-9]{2,10}){1,}$/;
 
 const inputRules: any = {
   emailRequired: (value: string) => !!value || "Email is required",
   emailFormat: (value: string) => emailRegex.test(value) || "Invalid email format",
-  passwordRequired: (value: string) => !!value || "Password is required",
-  passwordLength: (value: string) => value.length >= 8 || "Password must be at least 8 characters long"
+  passwordRequired: (value: string) => !!value || "Password is required"
 };
 
 const isLoading = ref(false);
@@ -19,15 +27,77 @@ const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
 const rememberMe = ref(false);
+const errorMessage = ref("");
+
+const usersCollection = useCollection(usersRef);
 
 const handleSignIn = () => {
   isLoading.value = true;
+  errorMessage.value = "";
   
   if (email.value !== "" && emailRegex.test(email.value) && password.value !== "") {
-    showToast("success", "Sign In Successfully !!!");
+    signInWithEmailAndPassword(auth, email.value, password.value)
+      .then((userCredential) => {
+        console.log("Signed in user", userCredential);
+
+        showToast("success", "Sign in successfully !");
+        router.push("/");
+      })
+      .catch((error) => {
+        console.log(error.message);
+        errorMessage.value = "Invalid credentials !";
+      });
   }
   
   isLoading.value = false;
+};
+
+const handleSignInWithGoogle = () => {
+  errorMessage.value = "";
+
+  signInWithPopup(auth, googleAuthProvider)
+    .then(async (result) => {
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken;
+      console.log("Token: ", token);
+
+      try {
+        if (!checkEmailIfExists(result.user.email)) {
+          const docRef = await addDoc(usersRef, {
+            id: result.user.uid,
+            firstName: result.user.displayName,
+            lastName: "",
+            email: result.user.email,
+            password: "0",
+            country: "Vietnam",
+            createdAt: new Date()
+          });
+          
+          console.log("User written with ID: ", docRef.id);
+        }
+
+        console.log("Signed in user: ", result.user);
+        showToast("success", "Sign in successfully !");
+        router.push("/");
+      } catch (e) {
+        console.error("Error adding user: ", e)
+      }
+    })
+    .catch((error) => {
+      console.log(error.message);
+      // const email = error.customData.email;
+      // console.log("Email: ", email);
+      // const credential = GoogleAuthProvider.credentialFromError(error);
+      // console.log("Credential: ", credential);
+    });
+};
+
+const checkEmailIfExists = (email: string | null) => {
+  const user = usersCollection.value.find((user: any) => user.email === email);
+
+  if (user)
+    return true;
+  return false;
 };
 
 const showToast = (errorType: string, message = "") => {
@@ -69,7 +139,7 @@ const showToast = (errorType: string, message = "") => {
           </v-text-field>
 
           <v-text-field
-            :rules="[inputRules.passwordRequired, inputRules.passwordLength]"
+            :rules="[inputRules.passwordRequired]"
             v-model="password"
             :type="showPassword ? 'text' : 'password'"
             :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
@@ -77,6 +147,10 @@ const showToast = (errorType: string, message = "") => {
             label="Password"
             variant="underlined">
           </v-text-field>
+
+          <p class="font-weight-medium text-red-700 mb-2">
+            {{ errorMessage }}
+          </p>
           
           <div class="flex justify-between items-center">
             <div class="flexbox-row">
@@ -86,9 +160,11 @@ const showToast = (errorType: string, message = "") => {
               </v-checkbox-btn>
               <p class="text-sm">Remember me</p>
             </div>
-            <div class="text-decoration-underline text-primary-1 text-sm font-bold">
-              Forget your password ?
-            </div>
+            <RouterLink to="/">
+              <div class="text-decoration-underline text-primary-1 text-sm font-bold">
+                Forget your password ?
+              </div>
+            </RouterLink>
           </div>
           
           <v-btn
@@ -126,7 +202,8 @@ const showToast = (errorType: string, message = "") => {
             class="text-none w-full"
             size="large"
             prepend-icon="mdi-google"
-            variant="outlined">
+            variant="outlined"
+            @click="handleSignInWithGoogle">
             Continue with Google
           </v-btn>
         </div>
