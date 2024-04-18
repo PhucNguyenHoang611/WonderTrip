@@ -7,7 +7,8 @@ import SignUpImage from "/SignUpImage.jpg";
 import {
   createUserWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider } from "firebase/auth";
+  GoogleAuthProvider,
+  sendEmailVerification } from "firebase/auth";
 import { addDoc } from "firebase/firestore";
 import { usersRef, googleAuthProvider } from "@/config/firebase";
 import { useFirebaseAuth, useCollection } from "vuefire";
@@ -56,22 +57,25 @@ const handleSignUp = () => {
     && password.value.length >= 8
     && country.value !== ""
   ) {
+  isLoading.value = true;
+
   createUserWithEmailAndPassword(auth, email.value, password.value)
     .then(async (userCredential) => {
       try {
-        const docRef = await addDoc(usersRef, {
+        await addDoc(usersRef, {
           id: userCredential.user.uid,
           firstName: firstName.value,
           lastName: lastName.value,
           email: email.value,
-          password: password.value,
           country: country.value,
-          createdAt: new Date()
+          provider: "Default"
         });
         
-        console.log("User written with ID: ", docRef.id);
-        showToast("success", "Sign up successfully !");
-        router.push("/");
+        await sendEmailVerification(userCredential.user)
+          .then(() => {
+            showToast("success", "We have sent an email with a confirmation link to your email address !");
+            router.push("/sign-in");
+          });
       } catch (e) {
         console.error("Error adding user: ", e);
       }
@@ -103,9 +107,8 @@ const handleSignUpWithGoogle = () => {
             firstName: result.user.displayName,
             lastName: "",
             email: result.user.email,
-            password: "0",
             country: "Vietnam",
-            createdAt: new Date()
+            provider: "Google"
           });
           
           console.log("User written with ID: ", docRef.id);
@@ -141,7 +144,7 @@ const showToast = (errorType: string, message = "") => {
     type: errorType,
     position: "bottom-right"
   });
-}
+};
 </script>
 
 <template>

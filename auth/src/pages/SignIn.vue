@@ -7,7 +7,8 @@ import { useFirebaseAuth, useCollection } from "vuefire";
 import {
   signInWithEmailAndPassword, 
   signInWithPopup,
-  GoogleAuthProvider } from "firebase/auth";
+  GoogleAuthProvider,
+  sendEmailVerification } from "firebase/auth";
 import { addDoc } from "firebase/firestore";
 import { googleAuthProvider, usersRef } from "@/config/firebase";
 
@@ -37,11 +38,19 @@ const handleSignIn = () => {
   
   if (email.value !== "" && emailRegex.test(email.value) && password.value !== "") {
     signInWithEmailAndPassword(auth, email.value, password.value)
-      .then((userCredential) => {
-        console.log("Signed in user", userCredential);
+      .then(async (userCredential) => {
+        if (userCredential.user.emailVerified) {
+          console.log("Signed in user", userCredential);
 
-        showToast("success", "Sign in successfully !");
-        router.push("/");
+          showToast("success", "Sign in successfully !");
+          router.push("/");
+        } else {
+          console.log("Email isn't verified !");
+          await sendEmailVerification(userCredential.user)
+            .then(() => {
+              showToast("error", "Please verify your email to continue. We have sent an email with a confirmation link to your email address !");
+            });
+        }
       })
       .catch((error) => {
         console.log(error.message);
@@ -68,9 +77,8 @@ const handleSignInWithGoogle = () => {
             firstName: result.user.displayName,
             lastName: "",
             email: result.user.email,
-            password: "0",
             country: "Vietnam",
-            createdAt: new Date()
+            provider: "Google"
           });
           
           console.log("User written with ID: ", docRef.id);
@@ -106,7 +114,7 @@ const showToast = (errorType: string, message = "") => {
     type: errorType,
     position: "bottom-right"
   });
-}
+};
 </script>
 
 <template>
@@ -160,7 +168,7 @@ const showToast = (errorType: string, message = "") => {
               </v-checkbox-btn>
               <p class="text-sm">Remember me</p>
             </div>
-            <RouterLink to="/">
+            <RouterLink to="/forget-password">
               <div class="text-decoration-underline text-primary-1 text-sm font-bold">
                 Forget your password ?
               </div>
