@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        "poppins": ["Poppins", "san-serif"]
+      },
       colors: {
         "primary-1": "rgb(var(--primary-1))",
         "primary-2": "rgb(var(--primary-2))",
