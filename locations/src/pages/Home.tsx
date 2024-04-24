@@ -2,9 +2,9 @@
 import HomeBanner from "@/components/Home/HomeBanner";
 import HomeCarousel from "@/components/Home/HomeCarousel";
 import Subscribe from "@/components/Home/Subscribe";
-import { Box, Button, Grid, ImageList, ImageListItem, Typography } from "@mui/material";
+import { Box, Button, Grid, ImageList, ImageListItem, Rating, Typography } from "@mui/material";
 
-const itemData: any = [
+const masonryImages: any = [
   {
     img: "https://images.pexels.com/photos/1437618/pexels-photo-1437618.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
     title: "Image 1"
@@ -47,31 +47,31 @@ const Home = () => {
 
         <Grid container spacing={2} className="w-full flexbox-row font-poppins my-20">
           <Grid item xs={12} sm={6} md={4} lg={2} className="w-full flexbox-col">
-            <Box className="box-border flexbox-col w-[200px] h-[200px] overflow-hidden border-solid border-4 rounded-xl border-red-300 bg-white">
+            <Box className="box-border flexbox-col w-[200px] h-[200px] overflow-hidden border-solid border-4 rounded-xl border-red-300 bg-white hover:scale-125 transition duration-150 ease-in-out cursor-pointer">
               <img alt="Hotels" src="/HomeImages/Hotel.png" className="box-border w-[60px] object-cover object-center opacity-100" />
               <Typography className="font-semibold text-xl font-poppins mt-8">Hotels</Typography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={6} md={4} lg={2} className="w-full flexbox-col">
-            <Box className="box-border flexbox-col w-[200px] h-[200px] overflow-hidden border-solid border-4 rounded-xl border-green-300 bg-white">
+            <Box className="box-border flexbox-col w-[200px] h-[200px] overflow-hidden border-solid border-4 rounded-xl border-green-300 bg-white hover:scale-125 transition duration-150 ease-in-out cursor-pointer">
               <img alt="Hotels" src="/HomeImages/Notification.png" className="box-border w-[60px] object-cover object-center opacity-100" />
               <Typography className="font-semibold text-xl font-poppins mt-8">Things to do</Typography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={6} md={4} lg={2} className="w-full flexbox-col">
-            <Box className="box-border flexbox-col w-[200px] h-[200px] overflow-hidden border-solid border-4 rounded-xl border-orange-300 bg-white">
+            <Box className="box-border flexbox-col w-[200px] h-[200px] overflow-hidden border-solid border-4 rounded-xl border-orange-300 bg-white hover:scale-125 transition duration-150 ease-in-out cursor-pointer">
               <img alt="Hotels" src="/HomeImages/Cafe.png" className="box-border w-[60px] object-cover object-center opacity-100" />
               <Typography className="font-semibold text-xl font-poppins mt-8">Restaurant</Typography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={6} md={6} lg={2} className="w-full flexbox-col">
-            <Box className="box-border flexbox-col w-[200px] h-[200px] overflow-hidden border-solid border-4 rounded-xl border-purple-300 bg-white">
+            <Box className="box-border flexbox-col w-[200px] h-[200px] overflow-hidden border-solid border-4 rounded-xl border-purple-300 bg-white hover:scale-125 transition duration-150 ease-in-out cursor-pointer">
               <img alt="Hotels" src="/HomeImages/Booking.png" className="box-border w-[60px] object-cover object-center opacity-100" />
               <Typography className="font-semibold text-xl font-poppins mt-8">Easy Booking</Typography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={12} md={6} lg={2} className="w-full flexbox-col">
-            <Box className="box-border flexbox-col w-[200px] h-[200px] overflow-hidden border-solid border-4 rounded-xl border-blue-300 bg-white">
+            <Box className="box-border flexbox-col w-[200px] h-[200px] overflow-hidden border-solid border-4 rounded-xl border-blue-300 bg-white hover:scale-125 transition duration-150 ease-in-out cursor-pointer">
               <img alt="Hotels" src="/HomeImages/Plane.png" className="box-border w-[60px] object-cover object-center opacity-100" />
               <Typography className="font-semibold text-xl font-poppins mt-8">Tours</Typography>
             </Box>
@@ -126,7 +126,7 @@ const Home = () => {
           </Typography>
 
           <ImageList variant="masonry" cols={3} gap={8}>
-            {itemData.map((item: any) => (
+            {masonryImages.map((item: any) => (
               <ImageListItem key={item.img}>
                 <img
                   srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
@@ -142,6 +142,51 @@ const Home = () => {
       </Box>
 
       <HomeCarousel />
+
+      <Box className="my-20 w-full flexbox-row">
+        <Box className="w-[70%] flexbox-col">
+          <Typography className="text-center lg:text-5xl md:text-4xl text-3xl font-semibold font-poppins mb-10">
+            What Traveler Are Sayings
+          </Typography>
+
+          <Typography className="text-center lg:text-3xl md:text-2xl text-xl italic font-poppins mb-10">
+            “I am a traveler and ON TRIP Travels helps me a lot in finding interesting tourist destinations and of course the price offers is very worth it”.
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box className="my-20 w-full flexbox-row">
+        <Box className="lg:w-[70%] w-full flex lg:flex-row flex-col justify-around items-center lg:mx-0 mx-4 gap-4">
+          <Box className="lg:w-[45%] w-full sm:min-w-[400px] min-w-[280px] h-[200px] flexbox-row bg-white rounded-lg my-2">
+            <Box className="w-[30%] h-full flexbox-row">
+              <div className="rounded-full bg-black w-[100px] h-[100px] relative overflow-hidden flexbox-row">
+                <img src="https://images.pexels.com/photos/3626473/pexels-photo-3626473.jpeg?auto=compress&cs=tinysrgb&w=600?w=248&fit=crop&auto=format" />
+              </div>
+            </Box>
+            <Box className="w-[70%] flex flex-col justify-center items-start gap-2">
+              <Typography className="font-semibold text-lg font-poppins">Emily Smith</Typography>
+              <Rating name="rating-large" defaultValue={4} readOnly />
+              <Typography className="font-poppins">
+                Good trip. The team of ON TRIP tours and travel was very supportive and maintained prompt communication with us. 
+              </Typography>
+            </Box>
+          </Box>
+          <Box className="lg:w-[45%] w-full sm:min-w-[400px] min-w-[280px] h-[200px] flexbox-row bg-white rounded-lg my-2">
+            <Box className="w-[30%] h-full flexbox-row">
+              <div className="rounded-full bg-black w-[100px] h-[100px] relative overflow-hidden flexbox-row">
+                <img src="https://images.pexels.com/photos/3155276/pexels-photo-3155276.jpeg?auto=compress&cs=tinysrgb&w=600?w=248&fit=crop&auto=format" />
+              </div>
+            </Box>
+            <Box className="w-[70%] flex flex-col justify-center items-start gap-2">
+              <Typography className="font-semibold text-lg font-poppins">Lord Martin</Typography>
+              <Rating name="rating-large" defaultValue={5} readOnly />
+              <Typography className="font-poppins">
+                Good trip. The team of ON TRIP tours and travel was very supportive and maintained prompt communication with us. 
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
 
       <Subscribe />
     </Box>
