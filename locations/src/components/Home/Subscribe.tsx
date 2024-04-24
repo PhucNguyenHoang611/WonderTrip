@@ -2,15 +2,15 @@ import { Box, Button, Container, InputBase, Typography } from "@mui/material";
 
 const Subscribe = () => {
   return (
-    <Container className="bg-slate-500 overflow-hidden p-4 mb-20">
+    <Container className="bg-slate-500 overflow-hidden p-4 mb-20 rounded-lg">
       <Box className="flex lg:flex-row flex-col justify-center items-center">
         <Box className="lg:w-[55%] w-full px-4 py-8">
-          <Typography className="text-white font-medium text-xl font-poppins text-justify">
+          <Typography className="text-white font-medium text-xl font-poppins">
             Subscribe to get information, latest news and other interesting offers about WONDER TRIP Travels
           </Typography>
         </Box>
         <Box className="lg:w-[45%] w-full">
-          <Box className="bg-white flex justify-between gap-4 items-center p-4">
+          <Box className="bg-white flex justify-between gap-4 items-center p-4 rounded-lg">
             <InputBase
               className="w-full font-poppins"
               placeholder="Type your email here"

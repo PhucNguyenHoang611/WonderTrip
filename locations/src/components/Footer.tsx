@@ -11,11 +11,11 @@ const Footer = () => {
         <Grid container justifyContent="center" alignItems="center" spacing={2}>
           <Grid item xs={12} md={12} className="mb-8">
             <Grid container justifyContent="center">
-              <Link href="#" color="inherit" className="mx-6 no-underline hover:underline font-semibold">Home</Link>
-              <Link href="#" color="inherit" className="mx-6 no-underline hover:underline font-semibold">About</Link>
-              <Link href="#" color="inherit" className="mx-6 no-underline hover:underline font-semibold">Discovery</Link>
-              <Link href="#" color="inherit" className="mx-6 no-underline hover:underline font-semibold">Story</Link>
-              <Link href="#" color="inherit" className="mx-6 no-underline hover:underline font-semibold">Contact</Link>
+              <Link href="#" color="inherit" className="mx-6 no-underline hover:underline font-semibold text-lg">Home</Link>
+              <Link href="#" color="inherit" className="mx-6 no-underline hover:underline font-semibold text-lg">About</Link>
+              <Link href="#" color="inherit" className="mx-6 no-underline hover:underline font-semibold text-lg">Discovery</Link>
+              <Link href="#" color="inherit" className="mx-6 no-underline hover:underline font-semibold text-lg">Story</Link>
+              <Link href="#" color="inherit" className="mx-6 no-underline hover:underline font-semibold text-lg">Contact</Link>
             </Grid>
           </Grid>
           <Grid item xs={12} md={12}>
